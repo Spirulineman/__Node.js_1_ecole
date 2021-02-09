@@ -9,11 +9,15 @@ app.use(bodyParser.urlencoded({ extended: false }));
 var db = require('./db.js');
 mongoose.connect(db.url);
 
-//Routes
+/** ==============   Routes   ===========================*/
 
 var routeEleves = require('./routes/eleve'); //Middleware
 app.use('/eleves', routeEleves);
 
+var routeClasses = require('./routes/classe'); //Middleware
+app.use('/classes', routeClasses);
+
+/** ==================   /Routes   ====================== */
 
 app.get('/', (req, res) => { res.send('Hello world'); } );
 /*app.get('/', function (req, res) {
@@ -21,6 +25,4 @@ app.get('/', (req, res) => { res.send('Hello world'); } );
 });*/
 
 
-
-
-app.listen(3000, () => console.log('En écoute'));
+app.listen(3000, () => console.log('En écoute sur le port 3000 et envoi sur le port 27017 de MongoDb'));
