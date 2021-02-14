@@ -1,11 +1,12 @@
 const router = require('express').Router();
 const User = require('../models/User');
+// hashage du password
+const bcrypt = require('bcryptjs');
 
 /* Refactorisation (marche pas ...)===>> const { registerValidation } = require('../validation'); */
 
 // validation avec @hapi/joi
 const Joi = require('@hapi/joi');
-
 
  const schema = Joi.object({
         nom: Joi.string().min(6).required(),
@@ -30,11 +31,24 @@ router.post('/register', async (req, res) => {
     
     Refactorisation (marche pas ...)===>> if (error) return res.status(400).send(error.message); */
 
+    /**=================================
+     * LONGJHON debug
+     */
+
+        if (process.env.NODE_ENV !== 'production'){
+    require('longjohn');
+    };
+    //==================================
+    
+    // hachage du password
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(req.body.password, salt);
+    // creer un User 
     const user = new User({
 
         nom: req.body.nom,
         email: req.body.email,
-        password: req.body.password
+        password: hashedPassword
     });
     try {
         const savedUser = await user.save();
