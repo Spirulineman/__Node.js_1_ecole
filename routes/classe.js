@@ -5,8 +5,6 @@ var controleurClasse = require('./../controllers/classe');
 
 router.get('/', controleurClasse.getAll);
 
-/* router.get('/classes', controleurClasse.nom); */
-
 router.post('/new', controleurClasse.new);
 
 router.delete('/:id', controleurClasse.delete);

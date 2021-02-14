@@ -1,21 +1,36 @@
 const express = require('express');
 const app = express();
+
+const dotenv = require('dotenv');
 var mongoose = require('mongoose');
+// Authentification import 
+const authRoute = require('./routes/auth');
+
 var bodyParser = require('body-parser');
+
+dotenv.config();
 
 app.use(bodyParser.urlencoded({ extended: false }));
 
 //Connexion BDD
+
 var db = require('./db.js');
-mongoose.connect(db.url);
+mongoose.connect(process.env.DB_CONNECT, { useUnifiedTopology: true },
+    { useNewUrlParser: true }, );
+    
 
 /** ==============   Routes   ===========================*/
 
-var routeEleves = require('./routes/eleve'); //Middleware
+var routeEleves = require('./routes/eleve'); //Middleware eleve
 app.use('/eleves', routeEleves);
 
-var routeClasses = require('./routes/classe'); //Middleware
+var routeClasses = require('./routes/classe'); //Middleware classe
 app.use('/classes', routeClasses);
+
+app.use(express.json());
+
+
+app.use('/app/user', authRoute);//Middleware User
 
 /** ==================   /Routes   ====================== */
 
