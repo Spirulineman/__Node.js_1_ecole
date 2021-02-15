@@ -5,20 +5,28 @@ const bcrypt = require('bcryptjs');
 
 /* Refactorisation (marche pas ...)===>> const { registerValidation } = require('../validation'); */
 
-// validation avec @hapi/joi
+// validation du register avec @hapi/joi
 const Joi = require('@hapi/joi');
 
- const schema = Joi.object({
+ const schema_Register = Joi.object({
         nom: Joi.string().min(6).required(),
-        email: Joi.string().min(6).required(),
-        password: Joi.string().min(6).required()
+        email: Joi.string()
+            .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } })
+            .min(1)
+            .required(),
+        password: Joi.string().min(6).pattern(new RegExp('^[a-zA-Z0-9]{3,30}$'))
+        /* repeat_password: Joi.ref('password'),
+        access_token: [
+            Joi.string(),
+            Joi.number()
+        ], */
  });
     /* Refactorisation (marche pas ...)===>> return schema.validate({data, schema}); */
 
-
+//   ===================  Register   =======================
 router.post('/register', async (req, res) => {
 
-    const { error } = schema.validate(req.body);
+    const { error } = schema_Register.validate(req.body);
     if(error) return res.status(400).send(error.message);
 
     //  vérifier si le mail existe:
@@ -31,19 +39,10 @@ router.post('/register', async (req, res) => {
     
     Refactorisation (marche pas ...)===>> if (error) return res.status(400).send(error.message); */
 
-    /**=================================
-     * LONGJHON debug
-     */
-
-        if (process.env.NODE_ENV !== 'production'){
-    require('longjohn');
-    };
-    //==================================
-    
     // hachage du password
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(req.body.password, salt);
-    // creer un User 
+    // créer un User 
     const user = new User({
 
         nom: req.body.nom,
@@ -52,11 +51,52 @@ router.post('/register', async (req, res) => {
     });
     try {
         const savedUser = await user.save();
-        res.send(savedUser);
+        /* res.send(savedUser);  */
+        res.send({ user: user._id });
     } catch (err) {
         res.status(400).send(err);
     }
 
 });
+//   ===================  /Register   =======================
+
+//   ===================  Login   =======================
+
+const schema_Login = Joi.object({
+        
+        email: Joi.string()
+            .email({ minDomainSegments: 2, tlds: { allow: ['com', 'net'] } })
+            .min(1)
+            .required(),
+        password: Joi.string().min(6).pattern(new RegExp('^[a-zA-Z0-9]{3,30}$'))
+        /*,
+        access_token: [
+            Joi.string(),
+            Joi.number()
+        ], */
+ });
+
+router.post('/login', async (req,res) => {
+
+    const { error } = schema_Login.validate(req.body);
+    if(error) return res.status(400).send(error.message);
+
+    //  vérifier si le mail existe:
+
+    const user = await User.findOne({ email: req.body.email });
+    if (!user) return res.status(400).send('Email ou password invalide !');
+
+    //PASSWORD est correct ?
+    const validPassword = await bcrypt.compare(req.body.password, user.password);
+    if (!validPassword) return res.status(400).send('Email ou password invalide !') 
+
+    /* // create and assign access_token
+    const token = jwt.sign({ _id: user._id}, process.env.TOKEN_SECRET )
+    res.header('auth-token', token).send(token); */
+    
+    res.send('Vous êtes connecté !');
+});
+
+//   ===================  /Login   =======================
 
 module.exports = router;
