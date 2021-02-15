@@ -1,7 +1,12 @@
+require('dotenv').config();
+
 const router = require('express').Router();
 const User = require('../models/User');
+//TOKEN_SECRET
+const jwt = require('jsonwebtoken');
 // hashage du password
 const bcrypt = require('bcryptjs');
+
 
 /* Refactorisation (marche pas ...)===>> const { registerValidation } = require('../validation'); */
 
@@ -90,11 +95,10 @@ router.post('/login', async (req,res) => {
     const validPassword = await bcrypt.compare(req.body.password, user.password);
     if (!validPassword) return res.status(400).send('Email ou password invalide !') 
 
-    /* // create and assign access_token
-    const token = jwt.sign({ _id: user._id}, process.env.TOKEN_SECRET )
-    res.header('auth-token', token).send(token); */
+    // create and assign access_token
+    const token = jwt.sign({ _id: user._id}, process.env.TOKEN_SECRET )// attention dans le fichier .env ==>> pas d'espace TOKEN_SECRET=secret
+    res.header('auth-token', token).send(token);
     
-    res.send('Vous êtes connecté !');
 });
 
 //   ===================  /Login   =======================
