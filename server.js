@@ -32,6 +32,7 @@ app.use(express.json());
 
 app.use('/app/user', authRoute);//Middleware User
 
+
 /** ==================   /Routes   ====================== */
 
 app.get('/', (req, res) => { res.send('Hello world'); } );
